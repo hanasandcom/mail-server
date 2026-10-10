@@ -6,7 +6,7 @@ Standalone Stalwart mail server and SMTP relay deployment. The webmail client re
 
 ## State and credentials
 
-Mailbox data remains at `/home/hanasand/hanasand/mail/stalwart`; relay state and credentials remain at `/home/hanasand/hanasand/mail/mail-relay`. This repository contains no mailbox data or secrets. Set host-specific Compose values in an untracked `.env`, using `.env.example` as a reference.
+Mailbox data lives in the ignored `data/` directory, and relay state and credentials live in the ignored `mail-relay-state/` directory in this repository. Neither is committed. Set host-specific values in an untracked `.env`, using `.env.example` as a reference.
 
 ## Deploy
 
@@ -17,6 +17,6 @@ bun mail-relay/setup.ts ovh --image hanasand-mail-relay-health:<revision>
 bun mail-relay/setup.ts inspur --image hanasand-mail-relay-health:<revision> --api-container <active-api-container>
 ```
 
-The setup tool keeps the existing relay Compose project names, network aliases and host-side state paths. It does not move or recreate mailbox data. See [relay operations](mail-relay/README.md) for gateway, TLS, health and sender-authentication procedures.
+The setup tool keeps the existing relay Compose project names and network aliases. See [relay operations](mail-relay/README.md) for gateway, TLS, health and sender-authentication procedures.
 
 Run the unit checks with `bun test mail-relay`.

@@ -8,8 +8,8 @@ git -C "$root" fetch origin main
 git -C "$root" merge --ff-only origin/main
 
 case "$(id -un)" in
-    hanasand) default_state=/home/hanasand/hanasand/mail/stalwart ;;
-    ubuntu) default_state=/home/ubuntu/hanasand/mail/stalwart ;;
+    hanasand) default_state=/home/hanasand/stalwart/data ;;
+    ubuntu) default_state=/home/ubuntu/stalwart/data ;;
     *) echo 'Run Stalwart deploy as the configured Inspur or OVH service user.' >&2; exit 1 ;;
 esac
 export HANASAND_STALWART_STATE_DIR=${HANASAND_STALWART_STATE_DIR:-$default_state}
@@ -18,8 +18,8 @@ network=${HANASAND_SHARED_NETWORK:-hanasand_hanasandnet}
 docker network inspect "$network" >/dev/null 2>&1 || { echo "Required shared Docker network is missing: $network" >&2; exit 1; }
 compose() { docker compose --project-name hanasand-mail-stalwart -f "$root/compose.stalwart.yml" "$@"; }
 
-# Build before stopping the existing mail process. Both hosts keep using their
-# existing persistent data directories during the Compose ownership transfer.
+# Build before stopping the existing mail process. The data has been moved into
+# this repository's ignored state directory on each host.
 compose build stalwart
 if docker inspect hanasand_mail >/dev/null 2>&1 \
     && [ "$(docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' hanasand_mail)" != hanasand-mail-stalwart ]; then

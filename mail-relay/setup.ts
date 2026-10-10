@@ -8,7 +8,7 @@ import path from 'node:path'
 import { setTimeout as delay } from 'node:timers/promises'
 
 export const STALWART_IMAGE = 'stalwartlabs/stalwart@sha256:b6c2a04a79695136d5e2c16e9da0254135d0c3f3b1f8147873e812916b0ae8c4'
-export const ROOT = process.env.HANASAND_MAIL_RELAY_ROOT || path.join(homedir(), 'hanasand/mail/mail-relay')
+export const ROOT = process.env.HANASAND_MAIL_RELAY_ROOT || path.join(homedir(), 'stalwart/mail-relay-state')
 export const REPO_ROOT = process.env.HANASAND_STALWART_REPO_ROOT || path.join(homedir(), 'stalwart')
 export const COMPOSE_FILE = path.join(REPO_ROOT, 'compose.stalwart.yml')
 export const INSPUR_RELAY_IP = '172.20.0.9'
@@ -44,7 +44,7 @@ export function parseAdmin(toml: string) {
     }
     return { user: read('user'), secret: read('secret') }
 }
-export function mailAdmin(file = '/home/hanasand/hanasand/mail/stalwart/etc/config.toml', read = (filename: string) => readFileSync(filename, 'utf8'), containerRead = () => execFileSync('docker', ['exec', 'hanasand_mail', 'cat', '/opt/stalwart/etc/config.toml'], { encoding: 'utf8' })) {
+export function mailAdmin(file = path.join(homedir(), 'stalwart/data/etc/config.toml'), read = (filename: string) => readFileSync(filename, 'utf8'), containerRead = () => execFileSync('docker', ['exec', 'hanasand_mail', 'cat', '/opt/stalwart/etc/config.toml'], { encoding: 'utf8' })) {
     let contents: string
     try { contents = read(file) }
     catch (error) {

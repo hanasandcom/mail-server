@@ -11,8 +11,8 @@ STALWART_CONTAINER="${STALWART_CONTAINER:-hanasand_mail}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 case "$(id -un)" in
-    hanasand) default_state=/home/hanasand/hanasand/mail/stalwart; default_env=/home/hanasand/hanasand/.env ;;
-    ubuntu) default_state=/home/ubuntu/hanasand/mail/stalwart; default_env=/home/ubuntu/hanasand/.env ;;
+    hanasand) default_state=/home/hanasand/stalwart/data; default_env=/home/hanasand/stalwart/.env ;;
+    ubuntu) default_state=/home/ubuntu/stalwart/data; default_env=/home/ubuntu/stalwart/.env ;;
     *) default_state="$REPO_ROOT/data/stalwart"; default_env="$REPO_ROOT/.env" ;;
 esac
 STALWART_VOLUME_DIR="${STALWART_VOLUME_DIR:-$default_state}"

@@ -16,7 +16,7 @@ services:
       retries: 3
       start_period: 30s
     volumes:
-      - ${HANASAND_STALWART_STATE_DIR:-/home/hanasand/hanasand/mail/stalwart}:/opt/stalwart
+      - ${HANASAND_STALWART_STATE_DIR:-/home/hanasand/stalwart/data}:/opt/stalwart
     ports:
       - "127.0.0.1:${MAIL_HTTP_LOCAL_PORT:-8081}:8080"
       - "127.0.0.1:${MAIL_SMTP_LOCAL_PORT:-2525}:25"
@@ -49,8 +49,8 @@ services:
         max-size: 10m
         max-file: "3"
     volumes:
-      - ${HANASAND_MAIL_RELAY_ROOT:-/home/hanasand/hanasand/mail/mail-relay}/data:/opt/stalwart
-      - ${HANASAND_MAIL_RELAY_ROOT:-/home/hanasand/hanasand/mail/mail-relay}/tls:/run/tls:ro
+      - ${HANASAND_MAIL_RELAY_ROOT:-/home/hanasand/stalwart/mail-relay-state}/data:/opt/stalwart
+      - ${HANASAND_MAIL_RELAY_ROOT:-/home/hanasand/stalwart/mail-relay-state}/tls:/run/tls:ro
     ports:
       - "127.0.0.1:2687:1587"
       - "127.0.0.1:18081:8080"
@@ -80,7 +80,7 @@ services:
         max-size: 10m
         max-file: "3"
     volumes:
-      - ${HANASAND_MAIL_RELAY_ROOT:-/home/hanasand/hanasand/mail/mail-relay}/health:/run/config:ro
+      - ${HANASAND_MAIL_RELAY_ROOT:-/home/hanasand/stalwart/mail-relay-state}/health:/run/config:ro
     ports:
       - "127.0.0.1:19262:8080"
     networks: [mail-relay]
@@ -107,8 +107,8 @@ services:
         max-size: 10m
         max-file: "3"
     volumes:
-      - ${HANASAND_MAIL_RELAY_ROOT:-/home/hanasand/hanasand/mail/mail-relay}/health:/run/config:ro
-      - ${HANASAND_MAIL_RELAY_ROOT:-/home/hanasand/hanasand/mail/mail-relay}/ssh:/run/ssh:ro
+      - ${HANASAND_MAIL_RELAY_ROOT:-/home/hanasand/stalwart/mail-relay-state}/health:/run/config:ro
+      - ${HANASAND_MAIL_RELAY_ROOT:-/home/hanasand/stalwart/mail-relay-state}/ssh:/run/ssh:ro
     ports:
       - "127.0.0.1:19261:8080"
     networks:
@@ -136,7 +136,7 @@ services:
         max-size: 10m
         max-file: "3"
     volumes:
-      - ${HANASAND_MAIL_RELAY_ROOT:-/home/hanasand/hanasand/mail/mail-relay}/gateway.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ${HANASAND_MAIL_RELAY_ROOT:-/home/hanasand/stalwart/mail-relay-state}/gateway.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
 
 networks:
   hanasandnet:

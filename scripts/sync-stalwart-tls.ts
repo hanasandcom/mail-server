@@ -7,8 +7,8 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 
-const defaultState = userInfo().username === 'hanasand' ? '/home/hanasand/hanasand/mail/stalwart'
-    : userInfo().username === 'ubuntu' ? '/home/ubuntu/hanasand/mail/stalwart' : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../data/stalwart')
+const defaultState = userInfo().username === 'hanasand' ? '/home/hanasand/stalwart/data'
+    : userInfo().username === 'ubuntu' ? '/home/ubuntu/stalwart/data' : path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../data')
 const mail = process.env.HANASAND_STALWART_STATE_DIR || defaultState
 const certDir = process.env.MAIL_TLS_SOURCE || '/home/hanasand/openresty/letsencrypt/live/hanasand.com'
 const certPath = path.join(certDir, 'fullchain.pem')

@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
-import { incomingProbe, publicState, queueProbe, snapshot, smtpProbe } from './health.ts'
+import { createServer } from 'node:net'
+import { incomingProbe, openSmtp, publicState, queueProbe, snapshot, smtpProbe } from './health.ts'
 
 function fakeSmtp(options: { anonymousAccepted?: boolean; noTls?: boolean } = {}) {
     const commands: string[] = []
@@ -64,5 +65,22 @@ describe('mail relay readiness', () => {
         const noTls = fakeSmtp({ noTls: true })
         await expect(incomingProbe({ host: 'mail' }, async () => noTls.smtp as any)).rejects.toThrow('SMTP STARTTLS failed')
         expect(noTls.commands.some(line => line === 'DATA' || line.startsWith('MAIL FROM') || line.startsWith('RCPT TO'))).toBe(false)
+    })
+
+    test('a peer closing an SMTP socket rejects the probe and does not stall its poll loop', async () => {
+        const server = createServer(socket => {
+            socket.write('220 ready\r\n')
+            socket.once('data', () => socket.destroy())
+        })
+        await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
+        const address = server.address()
+        if (!address || typeof address === 'string') throw new Error('Local SMTP test server did not bind')
+        const started = performance.now()
+        try {
+            await expect(smtpProbe({ ...relay, host: '127.0.0.1', port: address.port }, false, openSmtp)).rejects.toThrow('SMTP connection closed')
+            expect(performance.now() - started).toBeLessThan(1000)
+        } finally {
+            await new Promise<void>((resolve, reject) => server.close(error => error ? reject(error) : resolve()))
+        }
     })
 })

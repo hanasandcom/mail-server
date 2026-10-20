@@ -27,6 +27,8 @@ Checks run every 30 seconds:
 
 - HTTP 200 means ready. HTTP 503 means a dependency failed, delivery is more than five
   minutes overdue, the queue exceeds 100 messages, or the sample is stale.
+- A closed SMTP connection ends the current probe promptly; the checker records the
+  failed sample and continues its next 30-second poll.
 - Inspur checks SMTP authentication, its queue, the tunnel, and OVH authentication.
 - OVH checks SMTP authentication with the Sales sender, its queue, an external
   Microsoft SMTP greeting, and STARTTLS through the incoming gateway and tunnel.

@@ -36,12 +36,31 @@ class SmtpConnection {
         callback({ code: Number(complete.at(-1)?.slice(0, 3)), lines: complete })
     }
     command(value?: string) {
+        if (this.socket.destroyed || !this.socket.writable) return Promise.reject(new Error('SMTP connection is closed'))
         if (value) this.socket.write(`${value}\r\n`)
         return new Promise<{ code: number; lines: string[] }>((resolve, reject) => {
             if (this.pending) return reject(new Error('Concurrent SMTP command'))
-            const onError = (error: Error) => { this.pending = undefined; reject(error) }
-            this.pending = response => { this.socket.removeListener('error', onError); resolve(response) }
+            let settled = false
+            const cleanup = () => {
+                this.socket.removeListener('error', onError)
+                this.socket.removeListener('close', onClose)
+            }
+            const onError = (error: Error) => {
+                if (settled) return
+                settled = true
+                this.pending = undefined
+                cleanup()
+                reject(error)
+            }
+            const onClose = () => onError(new Error('SMTP connection closed'))
+            this.pending = response => {
+                if (settled) return
+                settled = true
+                cleanup()
+                resolve(response)
+            }
             this.socket.once('error', onError)
+            this.socket.once('close', onClose)
             this.flush()
         })
     }

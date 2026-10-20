@@ -62,7 +62,7 @@ services:
     container_name: hanasand-mail-relay-ovh-health
     image: ${HANASAND_MAIL_RELAY_HEALTH_IMAGE:-hanasand-mail-relay-health:latest}
     build:
-      context: ./mail-relay
+      context: ./relay
       dockerfile: Dockerfile
     profiles: [relay-ovh]
     restart: unless-stopped
@@ -89,7 +89,7 @@ services:
     container_name: hanasand-mail-relay-inspur
     image: ${HANASAND_MAIL_RELAY_HEALTH_IMAGE:-hanasand-mail-relay-health:latest}
     build:
-      context: ./mail-relay
+      context: ./relay
       dockerfile: Dockerfile
     profiles: [relay-inspur]
     restart: unless-stopped

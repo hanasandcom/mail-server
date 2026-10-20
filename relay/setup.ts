@@ -120,10 +120,10 @@ export async function refreshOvhCertificate() {
 export function installCertificateRefresh(revision: string) {
     if (!/^[0-9a-f]{40}$/.test(revision)) throw new Error('A full pushed Git revision is required')
     const repo = REPO_ROOT
-    run(['git', '-C', repo, 'cat-file', '-e', `${revision}:mail-relay/setup.ts`], { ignore: true })
+    run(['git', '-C', repo, 'cat-file', '-e', `${revision}:relay/setup.ts`], { ignore: true })
     const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`
     const bun = path.join(homedir(), '.local/bin/bun')
-    const command = `git -C ${quote(repo)} show ${revision}:mail-relay/setup.ts | ${quote(bun)} - ovh --refresh-tls`
+    const command = `git -C ${quote(repo)} show ${revision}:relay/setup.ts | ${quote(bun)} - ovh --refresh-tls`
     const line = `17 * * * * /usr/bin/flock -n ${quote(path.join(ROOT, 'renewal.lock'))} /bin/bash -o pipefail -c ${quote(command)} 2>&1 | /usr/bin/logger -t hanasand-mail-relay-tls # hanasand-mail-relay-renewal`
     const current = spawnSync('crontab', ['-l'], { encoding: 'utf8' })
     if (current.status && !current.stderr.includes('no crontab')) throw new Error('Could not read existing crontab')
@@ -228,7 +228,7 @@ export async function configureGateway(site: 'ovh' | 'inspur') {
     const result = await api('http://127.0.0.1:18081', 'admin', saved.admin, '/reload')
     if (hasApiErrors(result)) throw new Error('Relay configuration reload failed')
     const configFile = path.join(ROOT, 'gateway.cfg')
-    writeSecret(configFile, readFileSync(path.join(REPO_ROOT, 'mail-relay/gateway.cfg'), 'utf8'))
+    writeSecret(configFile, readFileSync(path.join(REPO_ROOT, 'relay/gateway.cfg'), 'utf8'))
     chmodSync(configFile, 0o644)
     compose('ovh', ['run', '--rm', '--no-deps', 'mail-gateway-ovh', 'haproxy', '-c', '-f', '/usr/local/etc/haproxy/haproxy.cfg'])
     prepareLegacyContainer('hanasand-mail-gateway-ovh', [`${ROOT}/gateway.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro`])

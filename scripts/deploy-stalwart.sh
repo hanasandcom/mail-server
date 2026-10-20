@@ -3,7 +3,7 @@ set -eu
 
 root=$(git rev-parse --show-toplevel)
 test "$(git -C "$root" branch --show-current)" = main || { echo 'Deploy Stalwart from main.' >&2; exit 1; }
-test -z "$(git -C "$root" status --porcelain)" || { echo 'Mail checkout must be clean.' >&2; exit 1; }
+test -z "$(git -C "$root" status --porcelain)" || { echo 'Mail server checkout must be clean.' >&2; exit 1; }
 git -C "$root" fetch origin main
 git -C "$root" merge --ff-only origin/main
 
@@ -40,5 +40,5 @@ until [ "$(docker inspect -f '{{.State.Health.Status}}' hanasand_mail 2>/dev/nul
     sleep 2
 done
 curl --fail --silent --show-error --max-time 5 http://127.0.0.1:8081/healthz/live >/dev/null
-printf 'Stalwart deployed from Stalwart repo %s; persistent state remains at %s.\n' \
+printf 'Stalwart deployed from mail-server revision %s; persistent state remains at %s.\n' \
     "$(git -C "$root" rev-parse HEAD)" "$HANASAND_STALWART_STATE_DIR"

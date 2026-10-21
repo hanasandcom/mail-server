@@ -2,7 +2,7 @@
 
 This repository runs the Stalwart mail services and the host-specific SMTP relay
 and incoming-mail gateways. It does not contain the webmail interface or the
-application API.
+browser-facing Mail API; those are in `mail-web`.
 
 ## Service boundaries
 
@@ -10,13 +10,13 @@ application API.
 | --- | --- | --- |
 | Stalwart | Mailboxes, JMAP, SMTP, IMAP, and ManageSieve | `compose.stalwart.yml`, `stalwart/` |
 | Relay and gateways | Route outbound mail through OVH and deliver inbound mail to Inspur | `relay/`, `compose.stalwart.yml` |
-| Webmail | Browser UI at `mail.hanasand.com`; dashboard `/mail` embeds it | [mail-web](https://github.com/hanasandcom/mail-web) |
-| Mail API | Authenticated mailbox actions used by webmail | [Hanasand](https://github.com/hanasandcom/hanasand) |
+| Webmail | Browser UI at `mail.hanasand.com`; the Hanasand dashboard at `/mail` uses the same UI package | [mail-web](https://github.com/hanasandcom/mail-web) |
+| Mail API | Dedicated browser API for both mail UIs; validates sessions with Identity and talks to Stalwart directly | [mail-web API](https://github.com/hanasandcom/mail-web/tree/main/api) |
 
 The mail flow is:
 
 ```text
-Webmail → Hanasand API → Inspur Stalwart
+Webmail (standalone or dashboard) → Mail API → Identity, PostgreSQL, and Inspur Stalwart
 Outbound: Inspur Stalwart → SSH connector → OVH relay → recipient MX
 Inbound: recipient MX → OVH gateway → SSH tunnel → Inspur Stalwart
 ```

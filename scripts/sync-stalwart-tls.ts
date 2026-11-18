@@ -37,7 +37,9 @@ catch (error) {
 }
 const section = toml.match(/^\[authentication\.fallback-admin\]\s*\n([\s\S]*?)(?=^\[|\s*$)/m)?.[1]
 function tomlString(key: string) {
-    const value = section?.match(new RegExp(`^${key}\\s*=\\s*("(?:\\\\.|[^"\\\\])*"|'[^']*')\\s*$`, 'm'))?.[1]
+    const quoted = `("(?:\\\\.|[^"\\\\])*"|'[^']*')`
+    const value = section?.match(new RegExp(`^${key}\\s*=\\s*${quoted}\\s*$`, 'm'))?.[1]
+        || toml.match(new RegExp(`^authentication\\.fallback-admin\\.${key}\\s*=\\s*${quoted}\\s*$`, 'm'))?.[1]
     if (!value) throw new Error(`Missing fallback-admin ${key} in Stalwart configuration`)
     return value.startsWith('"') ? JSON.parse(value) : value.slice(1, -1)
 }

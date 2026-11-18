@@ -27,7 +27,14 @@ const state = path.join(homedir(), '.cache/hanasand-mail/tls-certificate-sha256'
 await mkdir(path.dirname(state), { recursive: true })
 const digest = createHash('sha256').update(cert).digest('hex')
 if ((await readFile(state, 'utf8').catch(() => '')).trim() === digest) process.exit(0)
-const toml = await readFile(path.join(mail, 'etc/config.toml'), 'utf8')
+let toml: string
+try { toml = await readFile(path.join(mail, 'etc/config.toml'), 'utf8') }
+catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'EACCES') throw error
+    const result = spawnSync('docker', ['exec', 'hanasand_mail', 'cat', '/opt/stalwart/etc/config.toml'], { encoding: 'utf8' })
+    if (result.status !== 0) throw new Error('Could not read Stalwart configuration through its container')
+    toml = result.stdout
+}
 const section = toml.match(/^\[authentication\.fallback-admin\]\s*\n([\s\S]*?)(?=^\[|\s*$)/m)?.[1]
 function tomlString(key: string) {
     const value = section?.match(new RegExp(`^${key}\\s*=\\s*("(?:\\\\.|[^"\\\\])*"|'[^']*')\\s*$`, 'm'))?.[1]

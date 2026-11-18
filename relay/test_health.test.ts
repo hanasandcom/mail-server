@@ -54,6 +54,19 @@ describe('mail relay readiness', () => {
         await expect(queueProbe(settings, (async () => Response.json({ error: 'forbidden' }, { status: 403 })) as typeof fetch)).rejects.toThrow('Queue unavailable')
     })
 
+    test('queue probe preserves Stalwart 64-bit message IDs', async () => {
+        const id = '252198466772796198'
+        const paths: string[] = []
+        const request = async (input: RequestInfo | URL) => {
+            paths.push(String(input))
+            return paths.length === 1
+                ? new Response(`{"data":{"items":[${id}],"total":1}}`)
+                : Response.json({ data: { created: '2026-11-18T00:00:00Z', recipients: [{ status: 'scheduled', retry_num: 0, next_retry: '2026-11-18T01:00:00Z' }] } })
+        }
+        expect(await queueProbe({ url: 'http://mail', username: 'reader', password: 'test' }, request as typeof fetch, () => Date.parse('2026-11-18T00:30:00Z') / 1000)).toBe(true)
+        expect(paths[1]).toBe(`http://mail/api/queue/messages/${id}`)
+    })
+
     test('submission requires authentication, tests anonymous rejection, and never sends DATA', async () => {
         const { smtp, commands } = fakeSmtp()
         expect(await smtpProbe(relay, true, async () => smtp as any)).toBe(true)

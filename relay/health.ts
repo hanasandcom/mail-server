@@ -142,14 +142,21 @@ export async function queueProbe(settings: any, request = fetch, now = () => Dat
     const get = async (endpoint: string) => {
         const response = await request(settings.url + endpoint, { headers: { Authorization: auth }, signal: AbortSignal.timeout(5000) })
         if (!response.ok) throw new Error('Queue unavailable')
-        const body = await response.json() as any
+        const raw = await response.text()
+        const body = JSON.parse(raw) as any
         if (body.error || !('data' in body)) throw new Error('Queue unavailable')
-        return body.data
+        return { data: body.data, raw }
     }
-    const queue = await get('/api/queue/messages?limit=101')
+    const { data: queue, raw } = await get('/api/queue/messages?limit=101')
     if (queue.total > 100) throw new Error('Queue limit exceeded')
-    for (const item of queue.items) {
-        const message = await get(`/api/queue/messages/${item}`)
+    // Stalwart returns 64-bit numeric IDs. JSON.parse rounds them, so read the
+    // raw list tokens before requesting each message.
+    const itemList = raw.match(/"items"\s*:\s*\[([^\]]*)\]/)?.[1]
+    if (itemList === undefined || !Array.isArray(queue.items)) throw new Error('Queue unavailable')
+    const ids = itemList.trim() ? itemList.split(',').map(item => item.trim()) : []
+    if (ids.length !== queue.items.length || ids.some(id => !/^\d+$/.test(id))) throw new Error('Queue unavailable')
+    for (const id of ids) {
+        const { data: message } = await get(`/api/queue/messages/${id}`)
         const created = epoch(message.created)
         for (const recipient of message.recipients || [{}]) {
             const status = recipient.status
